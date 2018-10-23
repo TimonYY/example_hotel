@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+    <title>Autodesk Forge Viewer Node.js Extractor example (local view)</title>
+    <meta content="Autodesk Forge Viewer Node.js Extractor example" name="description" />
+    <meta content="Extractor Node.js Forge Viewer" name="keywords" />
+    <meta content="Autodesk" name="author" />
+
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+
+
+    <!-- External libraries -->
+    <script src="./jquery.min.js"></script><!-- jquery.js -->
+    <script src="./jquery-ui.min.js"></script> <!-- http://jqueryui.com/ -->
+
+    <!-- Autodesk Forge Viewer -->
+    <link  href="https://developer.api.autodesk.com/viewingservice/v1/viewers/style.min.css?v=v4.0.1" rel="stylesheet" type="text/css">
+	<script src="./three.min.js"></script>
+     <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v4.0.1"></script>
+     <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/extensions/FirstPerson/FirstPerson.js?v=v4.0.1"></script>
+    <script src="deviceOrientationExt.js"></script>
+
+    <!-- Our scripts -->
+    <style>
+        /* Reset */
+        body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td { margin: 0; padding: 0; }
+        table { border-collapse: collapse; border-spacing: 0; }
+        fieldset, img { border: 0; }
+        address, caption, cite, code, dfn, th, var { font-style: normal; font-weight: normal; }
+        ol, ul { list-style: none; }
+        caption, th { text-align: left; }
+        h1, h2, h3, h4, h5, h6 { font-size: 100%; font-weight: normal; }
+        q:before, q:after { content: ''; }
+        abbr, acronym { border: 0; }
+
+        /* Baseline */
+        body, p, h1, h2, h3, h4, h5, h6 { font: normal 12px/1.3em Helvetica, Arial, sans-serif; color: #333; }
+        h1 { font-size: 22px; font-weight: bold; }
+        h2 { font-size: 19px; font-weight: bold; }
+        h3 { font-size: 16px; font-weight: bold; }
+        h4 { font-size: 14px; font-weight: bold; }
+        h5 { font-size: 12px; font-weight: bold; }
+        p { margin: 10px 0; }
+
+        body { text-align: center; margin: 40px; }
+
+        .left { float: left; }
+        .right { float: right; }
+        .clear { clear: both; }
+
+        div#project { margin: 0 auto; width: 100%; text-align: left; }
+        div#viewer { width: calc(100%); height: 700px; cursor: pointer; padding: 0px; margin-bottom: 20px; position: relative; overflow: hidden;
+            background-color: #eee; border: 2px dashed #aaa; border-radius: 10px; }
+        div#footer { margin: 0 auto; width: 100%; text-align: left; }
+        div#list { width: 175px; height: 700px; padding: 0px; position:relative;
+            background-color: #eee; border: 2px dashed #aaa; border-radius: 10px;
+	        overflow: auto; }
+
+        div#list div button {
+            background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #44c767), color-stop(1, #5cbf2a));
+            background:-moz-linear-gradient(top, #44c767 5%, #5cbf2a 100%);
+            background:-webkit-linear-gradient(top, #44c767 5%, #5cbf2a 100%);
+            background:-o-linear-gradient(top, #44c767 5%, #5cbf2a 100%);
+            background:-ms-linear-gradient(top, #44c767 5%, #5cbf2a 100%);
+            background:linear-gradient(to bottom, #44c767 5%, #5cbf2a 100%);
+            filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#44c767', endColorstr='#5cbf2a',GradientType=0);
+            background-color:#44c767;
+            -moz-border-radius:12px;
+            -webkit-border-radius:12px;
+            border-radius:12px;
+            border:1px solid #18ab29;
+            display:inline-block;
+            cursor:pointer;
+            color:#ffffff;
+            font-family:Verdana;
+            font-size:12px;
+
+            text-decoration:none;
+            text-shadow:0px 1px 0px #2f6627;
+            margin: 2px;
+	        /*height: 42px;*/height: 212px;
+            width: 170px;
+        }
+        div#list div button:hover {
+            background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #5cbf2a), color-stop(1, #44c767));
+            background:-moz-linear-gradient(top, #5cbf2a 5%, #44c767 100%);
+            background:-webkit-linear-gradient(top, #5cbf2a 5%, #44c767 100%);
+            background:-o-linear-gradient(top, #5cbf2a 5%, #44c767 100%);
+            background:-ms-linear-gradient(top, #5cbf2a 5%, #44c767 100%);
+            background:linear-gradient(to bottom, #5cbf2a 5%, #44c767 100%);
+            filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#5cbf2a', endColorstr='#44c767',GradientType=0);
+            background-color:#5cbf2a;
+        }
+        div#list div button:active { position:relative; top:1px; }
+
+        div#list div button div img { width: 150px; }
+    </style>
+
+    <script>
+        var docs =
+            [{"path":"./Resource/3D View/{3D} 183780/{3D}.svf","name":"{3D}"},{"path":"./e89d0751-00d5-7d3d-64c4-1bddf467c925_f2d/primaryGraphics.f2d","name":"A1.1 - 1st Floor Life Safety Plan"},{"path":"./0925dfe2-67e9-c445-ad27-a5dd677c1620_f2d/primaryGraphics.f2d","name":"A1.2 - 2nd Floor Life Safety Plan"},{"path":"./867173af-b567-98a0-32d2-d3ec3eba69d2_f2d/primaryGraphics.f2d","name":"A3.1 - Enlarged Plans"},{"path":"./ae35511b-677b-5144-6a35-d7f16cb13a7d_f2d/primaryGraphics.f2d","name":"A3.2 - Enlarged Plans"},{"path":"./2cd30e89-1caa-3607-4623-959ca5cabf6e_f2d/primaryGraphics.f2d","name":"A3.3 - Enlarged Plans"},{"path":"./7bfc9e42-e829-4ad8-6ea8-8ff038a0dab6_f2d/primaryGraphics.f2d","name":"A3.4 - Enlarged Plans"},{"path":"./f95bd445-c401-d404-daf9-d35ea2469623_f2d/primaryGraphics.f2d","name":"A 4.1 - Reflected Ceiling Plan"},{"path":"./51dca263-1500-5dce-e4ba-585b0930f03d_f2d/primaryGraphics.f2d","name":"A 4.2 - Reflected Ceiling Plan"},{"path":"./bffde477-76f3-2c46-ba42-a1d57172f178_f2d/primaryGraphics.f2d","name":"A 4.3 - Reflected Ceiling Plan"},{"path":"./ba814af0-c694-6ae3-c569-55d3f82adb2b_f2d/primaryGraphics.f2d","name":"A5.1 - Roof Plan"},{"path":"./892d96b2-6010-9ae3-d4d7-b321b1005138_f2d/primaryGraphics.f2d","name":"A5.2 - Roof Details"},{"path":"./4e1b6e55-004d-03b0-ac77-19df601446a1_f2d/primaryGraphics.f2d","name":"A6.1 - Exterior Elevations"},{"path":"./f58a5f51-ce0a-c6e8-5494-3a73499a59ab_f2d/primaryGraphics.f2d","name":"A6.2 - Exterior Elevations"},{"path":"./28919b7a-3aa5-903a-8c13-4997e416d4a4_f2d/primaryGraphics.f2d","name":"A6.3 - Exterior Elevations"},{"path":"./83578e95-aa91-f9b4-8cbe-1e2265a27cb7_f2d/primaryGraphics.f2d","name":"A7.1 - Building Sections"},{"path":"./d7459f9d-a8d8-0439-f2fc-a86a1f2558c4_f2d/primaryGraphics.f2d","name":"A7.2 - Building Sections"},{"path":"./51de8378-2b35-a15f-24d3-48a0fec19600_f2d/primaryGraphics.f2d","name":"A7.3 - Wall Sections"},{"path":"./ec0de3b9-b125-15db-4e11-53c5e71b938b_f2d/primaryGraphics.f2d","name":"A0.0 - Cover Sheet"},{"path":"./1557b9b2-732f-c513-57b5-1141f1b1e437_f2d/primaryGraphics.f2d","name":"A2.1 - 1st Floor Plan Overall"},{"path":"./250f196f-f72b-3d27-8394-227480328a2e_f2d/primaryGraphics.f2d","name":"A2.2 - 1st Floor Plan"},{"path":"./01193983-f805-8629-5560-5a2491c8d41d_f2d/primaryGraphics.f2d","name":"A2.3 - 2nd-8th Floor Plan (Typical)"}]
+        ;
+
+        var oViewer =null ;
+        $(document).ready (function () {
+            //var options ={ 'document': '', 'env': 'AutodeskProduction' } ;
+            var options ={ 'docid': docs [0].path, env: 'Local' } ;
+
+            //oViewer =new Autodesk.Viewing.Viewer3D ($("#viewer") [0], {}) ; // No toolbar
+            oViewer =new Autodesk.Viewing.Private.GuiViewer3D ($("#viewer") [0], {}) ; // With toolbar
+            Autodesk.Viewing.Initializer (options, function () {
+				oViewer.initialize () ;
+                oViewer.addEventListener (Autodesk.Viewing.GEOMETRY_LOADED_EVENT, function (event) {
+                    //oViewer.removeEventListener (Autodesk.Viewing.GEOMETRY_LOADED_EVENT, arguments.callee) ;
+                    oViewer.fitToView (true) ;
+                    setTimeout (function () { oViewer.autocam.setHomeViewFrom (oViewer.navigation.getCamera ()) ; }, 1000) ;
+                }) ;
+				oViewer.loadModel (options.docid) ;
+
+				for ( var i =0 ; i < docs.length ; i++ ) {
+					var r =$('<div><button id="view_' + i + '">'
+						+ docs [i].name
+						+ '<div><img id="img__' + i + '" src="' + docs [i].path + '.png"></div></button></div>') ;
+					$('#list').append (r) ;
+					$('#view_' + i).click (function (e) {
+						e.stopPropagation () ;
+                        //oViewer.impl.unloadCurrentModel () ;
+                        // API would be tearDown()/setUp()
+                        // tearDown() unloads extensions too, so you need setUp() after that to load again
+                        // setUp() requires the viewer configuration again, the one you use to start the viewer.
+                        oViewer.tearDown () ;
+                        oViewer.setUp ({ env: 'Local' }) ;
+						var i =parseInt (e.target.id.substring (5)) ;
+						oViewer.loadModel (docs [i].path) ;
+                        window.setTimeout(i=>viewer.toolController.activateTool('firstperson'),1000);
+
+					}) ;
+				}
+			}) ;
+        }) ;
+    </script>
+</head>
+
+<body>
+    <div id="project">
+
+        <div>
+            <div id="viewer" class="left"></div>
+          <!--  <div id="list" class="right"></div> -->
+        </div>
+        <br />
+    </div>
+
+
+</body>
+</html>
